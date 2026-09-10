@@ -141,7 +141,10 @@ class GpsClient:
         if first_byte == b"\x7e":
             self.handle_command(CommandFrame.decode(self._read_command_frame(first_byte)))
             return None
-        sentence = (first_byte + port.readline()).decode("ascii").strip()
+        line = port.readline()
+        if not line.endswith(b"\n"):
+            self._timeout()
+        sentence = (first_byte + line).decode("ascii").strip()
         if self.state is not OperationalState.SCIENCE:
             return None
         record = parse_gpgga(sentence)

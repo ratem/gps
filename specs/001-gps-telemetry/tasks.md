@@ -124,3 +124,15 @@ The MVP is Phase 2 plus User Story 1, with a small serial double sufficient to p
 CSV logging. Add deterministic serial control and data validation next, then introduce the real PTY
 double for integration and fault verification. Acceptance requires all tests and the quickstart
 workflow to pass with ICD traceability recorded.
+
+## Phase 8: Convergence
+
+- [X] T025 Normalize a serial line that ends incomplete at the 500 ms deadline to `SyncError` and
+  ordered recovery in `gps_client.py`; add coverage in `test_client.py` per FR-004 and FR-006
+  (partial).
+- [X] T026 Make `gps_double.py` read and expose client recovery frames `0x02` and `0x03`; verify
+  master-side observation in `test_integration.py` per FR-010 and FR-013 (partial).
+- [X] T027 Measure and assert the 500-550 ms `SyncError` deadline and three consecutive one-second
+  NMEA intervals in `test_client.py` and `test_integration.py` per SC-003 and SC-005 (missing).
+- [X] T028 Add a non-empty multi-byte command-frame test that asserts little-endian payload encoding
+  in `test_parser.py` per FR-003 and GPS-SW-0015 (missing).

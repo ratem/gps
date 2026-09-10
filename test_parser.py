@@ -21,6 +21,12 @@ class CommandFrameTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             CommandFrame.decode(b"\x7e\x7f\x00\x7f")
 
+    def test_preserves_little_endian_multibyte_command_data(self) -> None:
+        frame = CommandFrame(Command.SCIENCE_START, data=b"\x34\x12").encode()
+
+        self.assertEqual(frame[3:5], b"\x34\x12")
+        self.assertEqual(CommandFrame.decode(frame).data, b"\x34\x12")
+
 
 class GpggaParserTests(unittest.TestCase):
     def test_extracts_required_fields_from_valid_sentence(self) -> None:

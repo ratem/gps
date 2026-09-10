@@ -87,6 +87,17 @@ class GpsClientTests(unittest.TestCase):
             CommandFrame(Command.SU_R_SDP).encode() + CommandFrame(Command.SU_R_HK).encode(),
         )
 
+    def test_incomplete_nmea_line_enters_error_and_recovers(self) -> None:
+        client = GpsClient("unused")
+        client.serial_port = FakeSerial(VALID_GPGGA.rstrip(b"\r\n"))
+        client.state = OperationalState.SCIENCE
+
+        with self.assertRaises(SyncError):
+            client.process_once()
+
+        self.assertEqual(client.state, OperationalState.ERROR)
+        self.assertEqual(len(client.recovery_events), 1)
+
     def test_processes_science_command_then_valid_nmea(self) -> None:
         incoming = CommandFrame(Command.SCIENCE_START).encode() + VALID_GPGGA
         client = GpsClient("unused")
