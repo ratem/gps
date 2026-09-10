@@ -122,7 +122,9 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
 - **FR-002**: The client MUST use a UART interface configured for 9600 baud, 8 data bits, no
   parity, one start bit, and one stop bit (Req: GPS-E-0210).
 - **FR-003**: The system MUST use little-endian ordering for every multi-byte sequence and
-  LSB-first bit transmission for every byte (Reqs: GPS-SW-0015, GPS-SW-0016).
+  rely on the configured UART hardware for LSB-first bit transmission for every byte (Reqs:
+  GPS-SW-0015, GPS-SW-0016). Software verification MUST cover byte encoding and UART
+  configuration; hardware integration verification MUST cover wire-level bit order.
 - **FR-004**: The system MUST detect an empty receive buffer or an incomplete incoming serial
   packet after 500 ms, raise `SyncError`, and prevent indefinite blocking (Req: GPS-SW-0270).
 - **FR-005**: The system MUST implement the `INIT`, `STANDBY`, `SCIENCE`, and `ERROR` states.
@@ -131,8 +133,8 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
   (Reqs: GPS-SM-0010, GPS-SM-0020, GPS-SM-0030, GPS-SM-0040).
 - **FR-006**: Upon an error or timeout, the system MUST perform this ordered procedure: abort
   current operations; send `SU_R_SDP` using `CMD_ID` `0x02`; send `SU_R_HK` using `CMD_ID`
-  `0x03`; produce `OBC_SU_HK` even without a hardware response; then turn off the unit or
-  simulation stream (Req: GPS-SW-0140).
+  `0x03`; produce a local `OBC_SU_HK` recovery packet event even without a hardware response;
+  then turn off the unit or simulation stream (Req: GPS-SW-0140).
 - **FR-007**: Every command MUST use a frame consisting of start byte `0x7E`, one-byte `CMD_ID`,
   one-byte `LEN`, optional `DATA`, and one-byte XOR calculated over `CMD_ID`, `LEN`, and `DATA`
   (Req: GPS-SW-0170).
@@ -141,7 +143,9 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
 - **FR-009**: The simulator MUST create a Linux PTY master/slave pair, publish the slave path, and
   send hardcoded `$GPGGA` sentences at one-second intervals (Req: GPS-E-0010).
 - **FR-010**: The client MUST use the PTY slave as a drop-in serial port and retain the same core
-  behavior required for physical serial hardware (Req: GPS-E-0010).
+  behavior required for physical serial hardware (Req: GPS-E-0010). During simulation, the PTY
+  master sends command frames and NMEA input to the client slave, while the client slave sends
+  recovery frames to the master for simulator observation.
 - **FR-011**: The deployment design MUST provide two independent mass-memory units, each with at
   least 10 MB reserved for science and housekeeping logs (Req: GPS-SW-0040).
 - **FR-012**: Physical connector integration procedures MUST limit flight-grade connector
@@ -184,7 +188,7 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
 - **SC-002**: With invalid, corrupt, incomplete, or non-`$GPGGA` input, 0 telemetry records are
   appended for the rejected input.
 - **SC-003**: In a controlled timeout test, the system detects no input or an incomplete packet and
-  raises `SyncError` within 500 ms plus the test harness measurement tolerance.
+  raises `SyncError` between 500 ms and 550 ms after the read begins.
 - **SC-004**: Every tested timeout transitions to `ERROR` and records all five ordered recovery
   actions before the unit or simulation stream is turned off.
 - **SC-005**: The simulator publishes a usable PTY slave path and emits a `$GPGGA` sentence once

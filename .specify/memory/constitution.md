@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report
-- Version change: unversioned template -> 1.0.0
-- Modified principles: none; established initial governing principles.
-- Added sections: Core Principles, Engineering Constraints, Development and Verification Workflow,
-  Governance.
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles: II. UART and Binary Protocol Fidelity (clarified software and hardware
+    verification responsibilities).
+- Added sections: none.
 - Removed sections: none.
-- Follow-up TODOs: Set the original ratification date when it is known.
+- Follow-up TODOs: none.
 -->
 
 # GPS Telemetry System Constitution
@@ -21,9 +21,12 @@ not support an ICD requirement or a testable operational need is prohibited.
 ### II. UART and Binary Protocol Fidelity
 All UART connections MUST use 9600 baud, 8 data bits, no parity, one start bit, and one stop bit
 (Req: GPS-E-0210). Multi-byte sequences MUST use little-endian ordering (Req: GPS-SW-0015),
-and each transmitted byte MUST be LSB-first (Req: GPS-SW-0016). Commands MUST use the frame
-`0x7E | CMD_ID | LEN | DATA | XOR`, with XOR calculated over `CMD_ID`, `LEN`, and `DATA`
-(Req: GPS-SW-0170). These interface constraints MUST be asserted by automated tests.
+and the UART transport MUST transmit each byte LSB-first (Req: GPS-SW-0016). Software MUST
+encode and test multi-byte values as little-endian and verify serial configuration and command
+frames. Wire-level LSB-first behavior MUST be verified through the selected UART hardware or its
+integration documentation because `pyserial` does not control bit order. Commands MUST use the
+frame `0x7E | CMD_ID | LEN | DATA | XOR`, with XOR calculated over `CMD_ID`, `LEN`, and `DATA`
+(Req: GPS-SW-0170).
 
 ### III. Deterministic Timing and Fail-Safe States
 Every incoming serial packet read MUST use a 500 ms timeout. An incomplete packet or empty
@@ -77,4 +80,4 @@ this constitution and `GPS System Requirements and ICD.md`. Exceptions require w
 from the project owner and a bounded remediation plan. The constitution MUST be reviewed whenever
 the ICD changes or a verification failure exposes a governance gap.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-10
+**Version**: 1.1.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-10

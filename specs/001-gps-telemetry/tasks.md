@@ -41,12 +41,12 @@
 **Independent Test**: Supply an accepted sentence in `SCIENCE` and verify one CSV record with UTC,
 latitude, and longitude; verify `STANDBY` does not append a record.
 
-- [ ] T009 [US1] Write failing CSV logging tests in `test_client.py` for accepted telemetry in
-  `SCIENCE` and no writes in `STANDBY` per FR-001 and FR-005.
-- [ ] T010 [US1] Implement append-only telemetry record writing with UTC timestamp, latitude,
-  longitude, and persisted timestamp in `gps_client.py` per FR-001.
-- [ ] T011 [US1] Connect accepted NMEA records to CSV writing only in `SCIENCE` in `gps_client.py`
-  per FR-001 and FR-005.
+- [ ] T009 [US1] Write failing CSV logging tests in `test_client.py` for a validated telemetry
+  record in `SCIENCE` and no writes in `STANDBY` per FR-001 and FR-005.
+- [ ] T010 [US1] Implement append-only validated telemetry-record writing with UTC timestamp,
+  latitude, longitude, and persisted timestamp in `gps_client.py` per FR-001.
+- [ ] T011 [US1] Implement state-gated CSV writing for validated telemetry records in
+  `gps_client.py` per FR-001 and FR-005.
 
 ## Phase 4: User Story 2 - Operate Deterministically (Priority: P1)
 
@@ -73,8 +73,8 @@ missing-checksum, mismatched-checksum, and non-`$GPGGA` input produce no telemet
   valid `*HH` XOR, and each required rejection case per FR-008 and FR-015.
 - [ ] T016 [US3] Implement `$GPGGA` checksum and required-field validation in `gps_client.py` per
   FR-008 and FR-015.
-- [ ] T017 [US3] Implement NMEA field extraction and reject-before-write behavior in
-  `gps_client.py` per FR-001, FR-008, and FR-015.
+- [ ] T017 [US3] Implement NMEA field extraction and pass accepted records to the state-gated CSV
+  writer in `gps_client.py` per FR-001, FR-008, and FR-015.
 
 ## Phase 6: User Story 4 - Simulate Flight Hardware (Priority: P2)
 
@@ -83,9 +83,9 @@ missing-checksum, mismatched-checksum, and non-`$GPGGA` input produce no telemet
 **Independent Test**: Start the simulator, obtain the slave path, attach the client, and observe
 three one-second NMEA intervals plus clean handling of an intentional simulator stop.
 
-- [ ] T018 [US4] Write failing PTY integration tests in `test_integration.py` for published slave
-  paths, one-second NMEA output, client logging, and intentional PTY loss per FR-009, FR-010, and
-  FR-013.
+- [ ] T018 [US4] Write failing PTY integration tests in `test_integration.py` for master-to-slave
+  commands and NMEA, slave-to-master recovery frames, published paths, one-second output, client
+  logging, and PTY loss per FR-009, FR-010, and FR-013.
 - [ ] T019 [US4] Implement PTY master/slave creation and slave-path publication in `gps_double.py`
   per FR-009.
 - [ ] T020 [US4] Implement deterministic one-second, checksummed `$GPGGA` streaming and controlled
@@ -95,11 +95,12 @@ three one-second NMEA intervals plus clean handling of an intentional simulator 
 
 ## Phase 7: Polish and Cross-Cutting Verification
 
-- [ ] T022 Verify little-endian multi-byte encoding and document UART LSB-first transport reliance
-  in `test_parser.py` and `contracts/serial-protocol.md` per FR-003.
+- [ ] T022 Verify little-endian multi-byte encoding and serial configuration in `test_parser.py`,
+  then record wire-level LSB-first UART integration evidence in
+  `contracts/serial-protocol.md` per FR-003.
 - [ ] T023 Run the complete `unittest` suite and the manual quickstart verification in
   `specs/001-gps-telemetry/quickstart.md` per FR-013.
-- [ ] T024 Add an ICD-to-implementation-and-test traceability table to
+- [ ] T024 Verify each completed task against the ICD traceability table in
   `specs/001-gps-telemetry/plan.md` per FR-014.
 
 ## Dependencies and Execution Order

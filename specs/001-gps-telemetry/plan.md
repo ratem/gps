@@ -44,7 +44,7 @@ mate/de-mate cycles during hardware integration
 - PASS: Python 3.11+, explicit hardware interfaces, deterministic state transitions, and focused
   automated tests are planned (Constitution I).
 - PASS: UART, byte/bit ordering, command framing, and XOR verification are represented in the
-  serial contract and unit tests (Constitution II).
+  serial contract, unit tests, and hardware integration evidence (Constitution II).
 - PASS: The 500 ms `SyncError` behavior and ordered five-step recovery are explicit in the state
   design and integration tests (Constitution III).
 - PASS: Only checksummed, complete `$GPGGA` data can reach CSV storage; the PTY produces one
@@ -87,3 +87,14 @@ without an unnecessary package layer.
 ## Complexity Tracking
 
 No constitution exceptions require justification.
+
+## ICD Traceability
+
+| ICD requirement | Planned verification |
+|---|---|
+| GPS-E-0010, GPS-E-0210 | PTY integration test and serial-configuration unit test |
+| GPS-SW-0015, GPS-SW-0016 | Byte-encoding unit test and UART hardware integration evidence |
+| GPS-SW-0270, GPS-SW-0140 | Timeout and ordered-recovery unit and integration tests |
+| GPS-SW-0170 | Command-frame unit tests |
+| GPS-SW-0025 | NMEA parser and CSV logging tests |
+| GPS-SW-0040, GPS-E-0020 | Physical deployment checklist |
