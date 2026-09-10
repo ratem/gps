@@ -15,6 +15,7 @@
 - Q: Must every `$GPGGA` sentence include and pass the standard NMEA XOR checksum before it can be logged? → A: Every accepted `$GPGGA` sentence requires a valid `*HH` NMEA XOR checksum; missing or mismatched checksums are rejected.
 - Q: Which one-byte `CMD_ID` starts the transition from `STANDBY` to `SCIENCE`? → A: `0x01` is the `SCIENCE_START` command.
 - Q: Is the dual-memory, 10 MB reservation requirement limited to physical deployment hardware? → A: Yes; it is documented for deployment verification only and is not modeled by the client or simulator.
+- Q: Which `CMD_ID` values request `SU_R_SDP` and `SU_R_HK` during error recovery? → A: `0x02` requests `SU_R_SDP`; `0x03` requests `SU_R_HK`.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -129,8 +130,9 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
   may transition from `STANDBY` to `SCIENCE`; and a `SyncError` in `SCIENCE` MUST enter `ERROR`
   (Reqs: GPS-SM-0010, GPS-SM-0020, GPS-SM-0030, GPS-SM-0040).
 - **FR-006**: Upon an error or timeout, the system MUST perform this ordered procedure: abort
-  current operations; request `SU_R_SDP`; request `SU_R_HK`; produce `OBC_SU_HK` even without a
-  hardware response; then turn off the unit or simulation stream (Req: GPS-SW-0140).
+  current operations; send `SU_R_SDP` using `CMD_ID` `0x02`; send `SU_R_HK` using `CMD_ID`
+  `0x03`; produce `OBC_SU_HK` even without a hardware response; then turn off the unit or
+  simulation stream (Req: GPS-SW-0140).
 - **FR-007**: Every command MUST use a frame consisting of start byte `0x7E`, one-byte `CMD_ID`,
   one-byte `LEN`, optional `DATA`, and one-byte XOR calculated over `CMD_ID`, `LEN`, and `DATA`
   (Req: GPS-SW-0170).
@@ -154,9 +156,9 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
   a sentence with a missing, malformed, or mismatched checksum and MUST NOT write a telemetry
   record for it.
 - **FR-016**: The system MUST recognize valid command identifiers, including the command that
-  requests transition from `STANDBY` to `SCIENCE`. `CMD_ID` `0x01` MUST mean `SCIENCE_START`.
-  The client MUST reject any other command identifier without changing state until that identifier
-  is defined by the ICD.
+  requests transition from `STANDBY` to `SCIENCE`. `CMD_ID` `0x01` MUST mean `SCIENCE_START`,
+  `0x02` MUST mean `SU_R_SDP`, and `0x03` MUST mean `SU_R_HK`. The client MUST reject any other
+  command identifier without changing state until that identifier is defined by the ICD.
 - **FR-017**: The two independent mass-memory units and their 10 MB reservations are a physical
   deployment requirement. Deployment verification MUST document compliance with Req: GPS-SW-0040;
   the GPS client and PTY simulator MUST NOT model, detect, or emulate the memory units.
@@ -199,7 +201,7 @@ client using the required UART settings, and observe hardcoded `$GPGGA` input ev
   policy are not specified by the ICD; these must be selected during planning without weakening the
   required stored fields.
 - Standard NMEA syntax is available to the source hardware, including a two-hex-digit checksum.
-- The initial command set defines only `CMD_ID` `0x01` (`SCIENCE_START`); future command
-  identifiers require an ICD amendment before implementation.
+- The initial command set defines `CMD_ID` `0x01` (`SCIENCE_START`), `0x02` (`SU_R_SDP`), and
+  `0x03` (`SU_R_HK`); future command identifiers require an ICD amendment before implementation.
 - The deployment hardware owns physical connector-cycle control and memory redundancy; those
   physical requirements are documented for deployment verification, not implemented in this feature.
